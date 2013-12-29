@@ -48,7 +48,14 @@ class WebSocketServerType implements ServerTypeInterface
         $this->loop = \React\EventLoop\Factory::create();
         
         $this->socket = new \React\Socket\Server($this->loop);
-
+        
+        foreach ($this->container->getParameter('jdare_clank.topic_services') as $topic) {
+            $service = $this->container->get($topic['service']);
+            if (method_exists($service, 'startZmq')) {
+                $service->startZmq($this->loop);
+            }
+        }
+        
         if ($this->host)
         {
             $this->socket->listen($this->port, $this->host);
